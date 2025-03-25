@@ -57,11 +57,9 @@ for i in range(noisyVectorCount):
     noisyWorkload = []
     for w in [workload.z0, workload.z1, workload.q, workload.w]:
         wScaled = w * workloadScaler
-        while True:
-            noise = np.random.laplace(0, b, 1)[0] * noiseScaler
-            if wScaled + noise >= 0:
-                noisyWorkload.append((wScaled + noise) / workloadScaler)
-                break
+        noise = np.random.laplace(0, b, 1)[0] * noiseScaler
+        noisyW = (wScaled + noise) / workloadScaler
+        noisyWorkload.append(max(0, noisyW))
         
     nratio = 1 / sum(noisyWorkload)
     adjustedNoisyWorkload = [i * nratio for i in noisyWorkload]
