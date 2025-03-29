@@ -1,3 +1,10 @@
+"""
+    Takes in a vector of probabilities (workload)
+    Scales the workload according to the workloadScaler
+    Adds noisy from the laplace distribution
+    Divides the resulting vector by its sum 
+"""
+
 import numpy as np
 
 class LaplaceMechanism: 

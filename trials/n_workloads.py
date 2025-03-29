@@ -1,3 +1,10 @@
+"""
+    Simulates a trial that creates n noisy workloads 
+    Rho is the maximum KL distnace between the original workload 
+    and a noisy workload. 
+    Robust tuning is calculated based on the average of n workloads.
+"""
+
 from .util import workloadToList, workloadListToListOfLists, listToWorkload
 from endure.solver import ClassicSolver
 from endure.lsm import (
@@ -18,9 +25,9 @@ class nWorkloadsTrial:
         self.noisyWorkloads = self.getNoisyWorkloads(workload=originalWorkload, sensitivity=sensitivity, 
                                                   epsilon=epsilon, noiseScaler=noiseScaler, workloadScaler=workloadScaler, 
                                                   numWorkloads=numWorkloads)
-        self.averageWorkload = self.getAverageNoisyWorkload(self.noisyWorkloads)
+        self.noisyWorkload = self.getAverageNoisyWorkload(self.noisyWorkloads)
         self.MaxKLDistance = self.getMaxKLDistance(self.noisyWorkloads, self.originalWorkload)
-        self.KLDistance = self.findKLDistance(self.averageWorkload, self.originalWorkload)
+        self.KLDistance = self.findKLDistance(self.noisyWorkload, self.originalWorkload)
         self.rho = self.KLDistance
 
     
@@ -31,7 +38,7 @@ class nWorkloadsTrial:
         solver = ClassicSolver(bounds)
 
         # find ideal tunings
-        designIdeal, scipy_opt_obj_ideal = solver.get_nominal_design(system, self.originalWorkload)
+        designNominal, scipy_opt_obj_ideal = solver.get_nominal_design(system, self.originalWorkload)
         designRobust, scipy_opt_obj_robust = solver.get_robust_design(system, self.originalWorkload, rho=self.rho, 
                                                                       init_args=[H, T, LAMBDA, ETA])
 
@@ -39,15 +46,25 @@ class nWorkloadsTrial:
         # the lower the cost the better
         cost = Cost(bounds.max_considered_levels)
         robustCost = cost.calc_cost(designRobust, system, self.originalWorkload)
-        idealCost = cost.calc_cost(designIdeal, system, self.originalWorkload)
+        nominalCost = cost.calc_cost(designNominal, system, self.originalWorkload)
 
         # print results 
-        print("Ideal Tuning")
-        pprint(designIdeal)
-        print("Robust Tuning")
-        pprint(designRobust)
-        print("Robust Cost:", robustCost)
-        print("Ideal Cost:", idealCost)
+        print(f"{'Nominal LSMDesign':20}")
+        print(f"  Bits per elem     : {designNominal.bits_per_elem:.4f}")
+        print(f"  Size ratio        : {designNominal.size_ratio:.2f}")
+        print(f"  Policy            : {designNominal.policy.name}")
+        print(f"  Kapacity          : {designNominal.kapacity}")
+
+        print(f"{'Robust LSMDesign':20}")
+        print(f"  Bits per elem     : {designRobust.bits_per_elem:.4f}")
+        print(f"  Size ratio        : {designRobust.size_ratio:.4f}")
+        print(f"  Policy            : {designRobust.policy.name}")
+        print(f"  Kapacity          : {designRobust.kapacity}")
+
+        print()
+        print("COST")
+        print(f"{'  Nominal':20}: {nominalCost:.6f}")
+        print(f"{'  Robust':20}: {robustCost:.6f}")
 
     def getNoisyWorkloads(self, workload, numWorkloads: int, noiseScaler, sensitivity, epsilon, workloadScaler):
         mechanism = LaplaceMechanism(workloadScaler=workloadScaler, noiseScaler=noiseScaler, sensitivity=sensitivity, epsilon=epsilon)

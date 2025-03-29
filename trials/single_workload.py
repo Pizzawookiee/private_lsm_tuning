@@ -1,3 +1,9 @@
+"""
+    Simulates a trial that creates one noisy workload 
+    Rho is assumed to be 1 because differential privacy 
+    aims to make the distance between two sets to at least 1. 
+"""
+
 import numpy as np
 from .util import (
     workloadToList, 
@@ -10,10 +16,8 @@ from endure.lsm import (
     Workload
 )
 from differential_privacy import LaplaceMechanism
-from pprint import pprint 
 
 RHO = 1
-
 
 class SingleWorkloadTrial: 
     def __init__(self, originalWorkload: Workload, epsilon:float, workloadScaler:int, noiseScaler:int, sensitivity:float=1, rho:float=RHO):
@@ -32,7 +36,7 @@ class SingleWorkloadTrial:
         solver = ClassicSolver(bounds)
 
         # find ideal tunings
-        designIdeal, scipy_opt_obj_ideal = solver.get_nominal_design(system, self.originalWorkload)
+        designNominal, scipy_opt_obj_ideal = solver.get_nominal_design(system, self.originalWorkload)
         designRobust, scipy_opt_obj_robust = solver.get_robust_design(system, self.noisyWorkload, rho=self.rho, 
                                                                       init_args=[H, T, LAMBDA, ETA])
 
@@ -40,15 +44,25 @@ class SingleWorkloadTrial:
         # the lower the cost the better
         cost = Cost(bounds.max_considered_levels)
         robustCost = cost.calc_cost(designRobust, system, self.originalWorkload)
-        idealCost = cost.calc_cost(designIdeal, system, self.originalWorkload)
+        nominalCost = cost.calc_cost(designNominal, system, self.originalWorkload)
 
-        # print results 
-        print("Ideal Tuning")
-        pprint(designIdeal)
-        print("Robust Tuning")
-        pprint(designRobust)
-        print("Robust Cost:", robustCost)
-        print("Ideal Cost:", idealCost)
+        # print results
+        print(f"{'Nominal LSMDesign':20}")
+        print(f"  Bits per elem     : {designNominal.bits_per_elem:.4f}")
+        print(f"  Size ratio        : {designNominal.size_ratio:.2f}")
+        print(f"  Policy            : {designNominal.policy.name}")
+        print(f"  Kapacity          : {designNominal.kapacity}")
+
+        print(f"{'Robust LSMDesign':20}")
+        print(f"  Bits per elem     : {designRobust.bits_per_elem:.4f}")
+        print(f"  Size ratio        : {designRobust.size_ratio:.4f}")
+        print(f"  Policy            : {designRobust.policy.name}")
+        print(f"  Kapacity          : {designRobust.kapacity}")
+
+        print()
+        print("COST")
+        print(f"{'  Nominal':20}: {nominalCost:.6f}")
+        print(f"{'  Robust':20}: {robustCost:.6f}")
 
 
 

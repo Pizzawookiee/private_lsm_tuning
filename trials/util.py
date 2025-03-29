@@ -1,6 +1,5 @@
 """
-UTILITY FUNCTIONS
-    functions that help us navigate from the Workload data type to lists and vice versa 
+functions that help us navigate from the Workload data type to lists and vice versa 
 """
 
 from endure.lsm import Workload

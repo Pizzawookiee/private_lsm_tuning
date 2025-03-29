@@ -1,3 +1,6 @@
+"""
+    Types of workloads we will use in the experiment 
+"""
 from enum import Enum
 from endure.lsm.types import Workload
 
