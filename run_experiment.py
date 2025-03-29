@@ -1,4 +1,5 @@
 from trials.single_workload import SingleWorkloadTrial
+from trials.n_workloads import nWorkloadsTrial
 from workload_types import ExpectedWorkload
 from pprint import pprint
 
@@ -21,5 +22,10 @@ pprint(originalWorkload)
 trial = SingleWorkloadTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
                             workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
                             sensitivity=SENSITIVITY, rho=RHO)
+"""
+trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
+                        workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
+                        sensitivity=SENSITIVITY, numWorkloads=10)"
+"""
 trial.run_trial(H, T, LAMBDA, ETA)
 print("KL Distance:", trial.KLDistance)

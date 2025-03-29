@@ -11,9 +11,9 @@ def workloadToList(wl: Workload):
 def listToWorkload(li: list): 
     return Workload(z0=li[0], z1=li[1], q=li[2], w=li[3])
 
-def workloadListToListOfLists(self, workloads): 
+def workloadListToListOfLists(workloads): 
     vectorList = []
     for wl in workloads: 
-        vector = self.workloadToList(wl)
+        vector = workloadToList(wl)
         vectorList.append(vector)
     return vectorList
