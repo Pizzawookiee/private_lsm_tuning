@@ -48,7 +48,7 @@ class nWorkloadsTrial:
                 bestDesign = designRobust
         return best_cost, bestDesign
     
-    def run_trial(self, numTrials=100): 
+    def run_trial(self, numTrials:int=10, printResults: bool=True): 
         bounds = LSMBounds()
         gen = ClassicGen(bounds, seed=42)
         system = gen.sample_system()
@@ -66,22 +66,23 @@ class nWorkloadsTrial:
                                                                system=system, costFunc=cost)
 
         # print results 
-        print(f"{'  Nominal LSMDesign':20}")
-        print(f"    Bits per elem   : {designNominal.bits_per_elem:.4f}")
-        print(f"    Size ratio      : {designNominal.size_ratio:.2f}")
-        print(f"    Policy          : {designNominal.policy.name}")
-        print(f"    Kapacity        : {designNominal.kapacity}")
+        if (printResults):
+            print(f"{'  Nominal LSMDesign':20}")
+            print(f"    Bits per elem   : {designNominal.bits_per_elem:.4f}")
+            print(f"    Size ratio      : {designNominal.size_ratio:.2f}")
+            print(f"    Policy          : {designNominal.policy.name}")
+            print(f"    Kapacity        : {designNominal.kapacity}")
 
-        print(f"{'  Robust LSMDesign':20}")
-        print(f"    Bits per elem   : {designRobust.bits_per_elem:.4f}")
-        print(f"    Size ratio      : {designRobust.size_ratio:.4f}")
-        print(f"    Policy          : {designRobust.policy.name}")
-        print(f"    Kapacity        : {designRobust.kapacity}")
+            print(f"{'  Robust LSMDesign':20}")
+            print(f"    Bits per elem   : {designRobust.bits_per_elem:.4f}")
+            print(f"    Size ratio      : {designRobust.size_ratio:.4f}")
+            print(f"    Policy          : {designRobust.policy.name}")
+            print(f"    Kapacity        : {designRobust.kapacity}")
 
-        print()
-        print("COST")
-        print(f"{'  Nominal':20}: {nominalCost:.6f}")
-        print(f"{'  Robust':20}: {robustCost:.6f}")
+            print()
+            print("COST")
+            print(f"{'  Nominal':20}: {nominalCost:.6f}")
+            print(f"{'  Robust':20}: {robustCost:.6f}")
         return designNominal, designRobust, nominalCost, robustCost
 
     def getNoisyWorkloads(self, workload, numWorkloads: int, noiseScaler, sensitivity, epsilon, workloadScaler):

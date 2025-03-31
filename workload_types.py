@@ -28,3 +28,6 @@ class ExpectedWorkload(Enum):
         self.id = id
         self.tag = tag
         self.workload = workload
+
+    def __str__(self):
+        return self.name.lower()
