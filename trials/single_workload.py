@@ -47,17 +47,17 @@ class SingleWorkloadTrial:
         nominalCost = cost.calc_cost(designNominal, system, self.originalWorkload)
 
         # print results
-        print(f"{'Nominal LSMDesign':20}")
-        print(f"  Bits per elem     : {designNominal.bits_per_elem:.4f}")
-        print(f"  Size ratio        : {designNominal.size_ratio:.2f}")
-        print(f"  Policy            : {designNominal.policy.name}")
-        print(f"  Kapacity          : {designNominal.kapacity}")
+        print(f"{'  Nominal LSMDesign':20}")
+        print(f"    Bits per elem     : {designNominal.bits_per_elem:.4f}")
+        print(f"    Size ratio        : {designNominal.size_ratio:.2f}")
+        print(f"    Policy            : {designNominal.policy.name}")
+        print(f"    Kapacity          : {designNominal.kapacity}")
 
-        print(f"{'Robust LSMDesign':20}")
-        print(f"  Bits per elem     : {designRobust.bits_per_elem:.4f}")
-        print(f"  Size ratio        : {designRobust.size_ratio:.4f}")
-        print(f"  Policy            : {designRobust.policy.name}")
-        print(f"  Kapacity          : {designRobust.kapacity}")
+        print(f"{'  Robust LSMDesign':20}")
+        print(f"    Bits per elem     : {designRobust.bits_per_elem:.4f}")
+        print(f"    Size ratio        : {designRobust.size_ratio:.4f}")
+        print(f"    Policy            : {designRobust.policy.name}")
+        print(f"    Kapacity          : {designRobust.kapacity}")
 
         print()
         print("COST")

@@ -28,7 +28,7 @@ class nWorkloadsTrial:
         self.noisyWorkload = self.getAverageNoisyWorkload(self.noisyWorkloads)
         self.MaxKLDistance = self.getMaxKLDistance(self.noisyWorkloads, self.originalWorkload)
         self.KLDistance = self.findKLDistance(self.noisyWorkload, self.originalWorkload)
-        self.rho = self.KLDistance
+        self.rho = self.MaxKLDistance
 
     
     def run_trial(self, H, T, LAMBDA, ETA): 
@@ -39,7 +39,7 @@ class nWorkloadsTrial:
 
         # find ideal tunings
         designNominal, scipy_opt_obj_ideal = solver.get_nominal_design(system, self.originalWorkload)
-        designRobust, scipy_opt_obj_robust = solver.get_robust_design(system, self.originalWorkload, rho=self.rho, 
+        designRobust, scipy_opt_obj_robust = solver.get_robust_design(system, self.originalWorkload, rho=self.MaxKLDistance, 
                                                                       init_args=[H, T, LAMBDA, ETA])
 
         # find cost
@@ -49,17 +49,17 @@ class nWorkloadsTrial:
         nominalCost = cost.calc_cost(designNominal, system, self.originalWorkload)
 
         # print results 
-        print(f"{'Nominal LSMDesign':20}")
-        print(f"  Bits per elem     : {designNominal.bits_per_elem:.4f}")
-        print(f"  Size ratio        : {designNominal.size_ratio:.2f}")
-        print(f"  Policy            : {designNominal.policy.name}")
-        print(f"  Kapacity          : {designNominal.kapacity}")
+        print(f"{'  Nominal LSMDesign':20}")
+        print(f"    Bits per elem     : {designNominal.bits_per_elem:.4f}")
+        print(f"    Size ratio        : {designNominal.size_ratio:.2f}")
+        print(f"    Policy            : {designNominal.policy.name}")
+        print(f"    Kapacity          : {designNominal.kapacity}")
 
-        print(f"{'Robust LSMDesign':20}")
-        print(f"  Bits per elem     : {designRobust.bits_per_elem:.4f}")
-        print(f"  Size ratio        : {designRobust.size_ratio:.4f}")
-        print(f"  Policy            : {designRobust.policy.name}")
-        print(f"  Kapacity          : {designRobust.kapacity}")
+        print(f"{'  Robust LSMDesign':20}")
+        print(f"    Bits per elem     : {designRobust.bits_per_elem:.4f}")
+        print(f"    Size ratio        : {designRobust.size_ratio:.4f}")
+        print(f"    Policy            : {designRobust.policy.name}")
+        print(f"    Kapacity          : {designRobust.kapacity}")
 
         print()
         print("COST")
@@ -104,10 +104,10 @@ class nWorkloadsTrial:
 
         return Workload(z0=result[0], z1=result[1], q=result[2], w=result[3]) 
 
-    def getMaxKLDistance(self, noisyWorkloads, averageWorkload): 
+    def getMaxKLDistance(self, noisyWorkloads, originalWorkload): 
         maxKLDistance = -np.inf
         for workload in noisyWorkloads:
-            d = self.findKLDistance(averageWorkload, workload)
+            d = self.findKLDistance(originalWorkload, workload)
             if d > maxKLDistance:
                 maxKLDistance = d
         return maxKLDistance
