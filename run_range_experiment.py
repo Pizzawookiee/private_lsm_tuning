@@ -1,10 +1,12 @@
 """
-Runs a range of experiments and saves as *.csv file
+Runs a range of experiments and saves costs as 'output.csv' and full terminal output as 'results.txt'
 """
 
 from trials.single_workload import SingleWorkloadTrial
 from trials.n_workloads import nWorkloadsTrial
 from workload_types import ExpectedWorkload
+
+import pandas as pd
 
 ###############################################
 #    ROBUST DESIGN SOLVER ARGS
@@ -36,6 +38,7 @@ originalWorkloadList = [ExpectedWorkload.BIMODAL_1, ExpectedWorkload.BIMODAL_2, 
 ExpectedWorkload.BIMODAL_4, ExpectedWorkload.BIMODAL_5, ExpectedWorkload.BIMODAL_6]
 
 
+
 def truncate(f, n):
     '''Truncates/pads a float f to n decimal places without rounding'''
     '''https://stackoverflow.com/questions/783897/how-to-truncate-float-values'''
@@ -56,6 +59,11 @@ def truncate(f, n):
 epsilonList = [float(truncate(0.05 * i, 2)) for i in range(1, 21)]
 print(epsilonList)
 
+columnLabels = [x.id for x in originalWorkloadList]
+#rowLabels = ['nominal'] + epsilonList #weird bug where rowLabels were not being used, leading to lots of empty rows
+
+df = pd.DataFrame(columns=columnLabels)
+
 ###############################################
 #    EXPERIMENT 
 ###############################################
@@ -71,10 +79,13 @@ trial = SingleWorkloadTrial(originalWorkload=originalWorkload, epsilon=epsilon,
 #    PRINTS
 ###############################################
 
-def run_trial_and_print_outputs (trial, originalWorkload, outputFile):
+def run_trial_and_print_outputs (trial, originalWorkload, outputFile, outputDataFrame):
     '''
     outputFile is a file object which can be initiated by 'with open(<output file name>, 'w') as f'
     '''
+    id_value = originalWorkload.id
+    originalWorkload = originalWorkload.workload
+    
     
     BORDER_LENGTH = 80
     print("=" * BORDER_LENGTH)
@@ -92,10 +103,11 @@ def run_trial_and_print_outputs (trial, originalWorkload, outputFile):
     print("TUNINGS", file = outputFile)
 
     
-
+    
     
     designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTrials=NUM_TRIALS)
-    
+    outputDataFrame.loc[truncate(trial.epsilon, 2), id_value] = robustCost
+    outputDataFrame.loc['nominal', id_value] = nominalCost
     # print results 
     outputFile.write(f"{'  Nominal LSMDesign':20}" + "\n")
     outputFile.write(f"    Bits per elem   : {designNominal.bits_per_elem:.4f}" + "\n")
@@ -119,12 +131,18 @@ def run_trial_and_print_outputs (trial, originalWorkload, outputFile):
 ###############################################
 #    RANGE EXPERIMENT
 ###############################################
+
+
 with open("results.txt", "w") as outputFile:
     for originalWorkload in originalWorkloadList:
-        originalWorkload = originalWorkload.workload
+        originalWorkload_workload = originalWorkload.workload
+        
         for epsilon in epsilonList:
-            trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
+            trial = nWorkloadsTrial(originalWorkload=originalWorkload_workload, epsilon=epsilon, 
                                                         workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
                                                         sensitivity=SENSITIVITY, numWorkloads=10)
-            run_trial_and_print_outputs(trial, originalWorkload, outputFile)
+            run_trial_and_print_outputs(trial, originalWorkload, outputFile, df)
+
+
+df.to_csv("outputs.csv")
             
