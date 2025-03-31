@@ -16,6 +16,8 @@ from endure.lsm import (
 from differential_privacy import LaplaceMechanism
 from pprint import pprint 
 import numpy as np
+import warnings
+warnings.filterwarnings('ignore')
 
 class nWorkloadsTrial: 
     def __init__(self, originalWorkload: Workload, epsilon:float, workloadScaler:int, noiseScaler:int, 
@@ -30,8 +32,23 @@ class nWorkloadsTrial:
         self.KLDistance = self.findKLDistance(self.noisyWorkload, self.originalWorkload)
         self.rho = self.MaxKLDistance
 
+    def get_best_robust_tuning(self, bounds: LSMBounds, numTrials, solver, system, costFunc): 
+        best_cost = np.inf
+        bestDesign = None
+        for i in range(numTrials): 
+            H = np.random.randint(bounds.bits_per_elem_range[0], bounds.bits_per_elem_range[1])
+            T = np.random.uniform(bounds.size_ratio_range[0], bounds.size_ratio_range[1])
+            LAMBDA = np.random.uniform(0, 10)
+            ETA = np.random.uniform(0, 10)
+            designRobust, scipy_opt_obj_robust = solver.get_robust_design(system, self.originalWorkload, rho=self.MaxKLDistance, 
+                                                                      init_args=[H, T, LAMBDA, ETA])
+            current_cost = costFunc.calc_cost(designRobust, system, self.originalWorkload)
+            if current_cost < best_cost: 
+                best_cost = current_cost
+                bestDesign = designRobust
+        return best_cost, bestDesign
     
-    def run_trial(self, H, T, LAMBDA, ETA): 
+    def run_trial(self, numTrials=100): 
         bounds = LSMBounds()
         gen = ClassicGen(bounds, seed=42)
         system = gen.sample_system()
@@ -39,27 +56,27 @@ class nWorkloadsTrial:
 
         # find ideal tunings
         designNominal, scipy_opt_obj_ideal = solver.get_nominal_design(system, self.originalWorkload)
-        designRobust, scipy_opt_obj_robust = solver.get_robust_design(system, self.originalWorkload, rho=self.MaxKLDistance, 
-                                                                      init_args=[H, T, LAMBDA, ETA])
 
         # find cost
         # the lower the cost the better
         cost = Cost(bounds.max_considered_levels)
-        robustCost = cost.calc_cost(designRobust, system, self.originalWorkload)
         nominalCost = cost.calc_cost(designNominal, system, self.originalWorkload)
+
+        robustCost, designRobust = self.get_best_robust_tuning(bounds=bounds, numTrials=numTrials, solver=solver, 
+                                                               system=system, costFunc=cost)
 
         # print results 
         print(f"{'  Nominal LSMDesign':20}")
-        print(f"    Bits per elem     : {designNominal.bits_per_elem:.4f}")
-        print(f"    Size ratio        : {designNominal.size_ratio:.2f}")
-        print(f"    Policy            : {designNominal.policy.name}")
-        print(f"    Kapacity          : {designNominal.kapacity}")
+        print(f"    Bits per elem   : {designNominal.bits_per_elem:.4f}")
+        print(f"    Size ratio      : {designNominal.size_ratio:.2f}")
+        print(f"    Policy          : {designNominal.policy.name}")
+        print(f"    Kapacity        : {designNominal.kapacity}")
 
         print(f"{'  Robust LSMDesign':20}")
-        print(f"    Bits per elem     : {designRobust.bits_per_elem:.4f}")
-        print(f"    Size ratio        : {designRobust.size_ratio:.4f}")
-        print(f"    Policy            : {designRobust.policy.name}")
-        print(f"    Kapacity          : {designRobust.kapacity}")
+        print(f"    Bits per elem   : {designRobust.bits_per_elem:.4f}")
+        print(f"    Size ratio      : {designRobust.size_ratio:.4f}")
+        print(f"    Policy          : {designRobust.policy.name}")
+        print(f"    Kapacity        : {designRobust.kapacity}")
 
         print()
         print("COST")

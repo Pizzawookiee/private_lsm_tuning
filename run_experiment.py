@@ -14,6 +14,7 @@ H = 5                    # Bits per element (for the bloom filter) : sample with
 T = 10                   # Size ratio : sample within the bounds range
 LAMBDA = 1               # Lagrange multipliers (0 to 10 or 0 to 100)
 ETA = 1                  # Lagrange multipliers (0 to 10 or 0 to 100)
+NUM_TRIALS = 100
 
 # roll the die on the starting points and choose the smallest value 
 # overflow is not a problem to the results 
@@ -22,7 +23,7 @@ ETA = 1                  # Lagrange multipliers (0 to 10 or 0 to 100)
 ###############################################
 #    LAPLACE MECHANISM ARGS
 ###############################################
-WORKLOAD_SCALER=1000       # Scales workload when adding noise
+WORKLOAD_SCALER=100        # Scales workload when adding noise
 NOISE_SCALER = 1           # Scales Laplace noise
 SENSITIVITY = 1            # amount the function's output will change when its input changes
 
@@ -53,9 +54,10 @@ trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon,
 ###############################################
 #    PRINTS
 ###############################################
-print("=" * 65)
+BORDER_LENGTH = 80
+print("=" * BORDER_LENGTH)
 print("Experiment Results")
-print("=" * 65)
+print("=" * BORDER_LENGTH)
 print("SETUP")
 print(f"{'  Rho':20}: {trial.rho:.6f}")
 print(f"{'  Epsilon':20}: {trial.epsilon:.6f}")
@@ -66,5 +68,5 @@ print(f"{'  Noisy Workload':20}: Workload(z0={trial.noisyWorkload.z0:.4f}, z1={t
       f"q={trial.noisyWorkload.q:.4f}, w={trial.noisyWorkload.w:.4f})")
 print()
 print("TUNINGS")
-trial.run_trial(H, T, LAMBDA, ETA)
-print("=" * 65)
+trial.run_trial(numTrials=NUM_TRIALS)
+print("=" * BORDER_LENGTH)
