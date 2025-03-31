@@ -15,13 +15,14 @@ class ExpectedWorkload(Enum):
     BIMODAL_1 = (5, "bimodal", Workload(z0=0.49, z1=0.49, q=0.01, w=0.01))
     BIMODAL_2 = (6, "bimodal", Workload(z0=0.49, z1=0.01, q=0.49, w=0.01))
     BIMODAL_3 = (7, "bimodal", Workload(z0=0.49, z1=0.01, q=0.01, w=0.49))
-    BIMODAL_4 = (8, "bimodal", Workload(z0=0.01, z1=0.49, q=0.01, w=0.49))
-    BIMODAL_5 = (9, "bimodal", Workload(z0=0.01, z1=0.01, q=0.49, w=0.49))
+    BIMODAL_4 = (8, "bimodal", Workload(z0=0.01, z1=0.49, q=0.49, w=0.01))
+    BIMODAL_5 = (9, "bimodal", Workload(z0=0.01, z1=0.49, q=0.01, w=0.49))
+    BIMODAL_6 = (10, "bimodal", Workload(z0=0.01, z1=0.01, q=0.49, w=0.49))
 
-    TRIMODAL_1 = (10, "trimodal", Workload(z0=0.33, z1=0.33, q=0.33, w=0.01))
-    TRIMODAL_2 = (11, "trimodal", Workload(z0=0.33, z1=0.33, q=0.01, w=0.33))
-    TRIMODAL_3 = (12, "trimodal", Workload(z0=0.33, z1=0.01, q=0.33, w=0.33))
-    TRIMODAL_4 = (13, "trimodal", Workload(z0=0.01, z1=0.33, q=0.33, w=0.33))
+    TRIMODAL_1 = (11, "trimodal", Workload(z0=0.33, z1=0.33, q=0.33, w=0.01))
+    TRIMODAL_2 = (12, "trimodal", Workload(z0=0.33, z1=0.33, q=0.01, w=0.33))
+    TRIMODAL_3 = (13, "trimodal", Workload(z0=0.33, z1=0.01, q=0.33, w=0.33))
+    TRIMODAL_4 = (14, "trimodal", Workload(z0=0.01, z1=0.33, q=0.33, w=0.33))
 
     def __init__(self, id: int, tag: str, workload: Workload):
         self.id = id
