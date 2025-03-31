@@ -68,5 +68,7 @@ print(f"{'  Noisy Workload':20}: Workload(z0={trial.noisyWorkload.z0:.4f}, z1={t
       f"q={trial.noisyWorkload.q:.4f}, w={trial.noisyWorkload.w:.4f})")
 print()
 print("TUNINGS")
-trial.run_trial(numTrials=NUM_TRIALS)
+designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTrials=NUM_TRIALS)
 print("=" * BORDER_LENGTH)
+
+

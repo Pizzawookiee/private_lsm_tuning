@@ -82,6 +82,7 @@ class nWorkloadsTrial:
         print("COST")
         print(f"{'  Nominal':20}: {nominalCost:.6f}")
         print(f"{'  Robust':20}: {robustCost:.6f}")
+        return designNominal, designRobust, nominalCost, robustCost
 
     def getNoisyWorkloads(self, workload, numWorkloads: int, noiseScaler, sensitivity, epsilon, workloadScaler):
         mechanism = LaplaceMechanism(workloadScaler=workloadScaler, noiseScaler=noiseScaler, sensitivity=sensitivity, epsilon=epsilon)
