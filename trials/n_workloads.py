@@ -46,6 +46,7 @@ class nWorkloadsTrial:
             if current_cost < best_cost: 
                 best_cost = current_cost
                 bestDesign = designRobust
+                
         return best_cost, bestDesign
     
     def run_trial(self, numTrials:int=10, printResults: bool=True): 
