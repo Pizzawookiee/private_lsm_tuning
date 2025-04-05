@@ -25,13 +25,21 @@ SENSITIVITY = 1              # amount the function's output will change when its
 #    EXPERIMENT SETUP (check workload_types)
 ###############################################
 #workloadTypes    = list(ExpectedWorkload)                                         # loads all workloads 
-workloadTypes    = [ExpectedWorkload.UNIMODAL_2]
-subdirectory     = "experiment_results/max_expected_rho"                          # save results to the correct folder
+workloadTypes    = [ExpectedWorkload.TRIMODAL_1, ExpectedWorkload.TRIMODAL_2, 
+                    ExpectedWorkload.TRIMODAL_3, ExpectedWorkload.TRIMODAL_4]
+subdirectory     = "experiment_results/rho_multiples"                            # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
-numWorkloads     = 10
+
+numWorkloads     = 10                                                             # number of workloads to establish rho with
 epsilonStart     = 0.05                                                           # epsilon start (inclusive)
 epsilonEnd       = 1.05                                                           # epsilon end   (exclusive)
 stepSize         = 0.05               
+
+rhoStart         = 0.25
+rhoEnd           = 2
+rhoStepSize      = 0.25
+
+
 
 
 for workloadType in workloadTypes: 
@@ -44,17 +52,18 @@ for workloadType in workloadTypes:
     originalWorkload = workloadType.workload
 
     table = []
-    header = ["Epsilon", "Robust Cost", "Nominal Cost", "Rho (Expected)", "Rho (True)"]
+    header = ["Epsilon", "Robust Cost", "Nominal Cost", "Rho (Expected)", "Rho Multiplier", "Rho (True)"]
     table.append(header)
 
     # run trials 
     for epsilon in np.arange(epsilonStart, epsilonEnd, stepSize): 
-        trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
-                                workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
-                                sensitivity=SENSITIVITY, numWorkloads=numWorkloads, rhoMethod='max')
-        
-        designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS)
-        table.append([epsilon, robustCost, nominalCost, trial.rhoExpected, trial.rhoTrue])
+        for rhoMultiplier in np.arange(rhoStart, rhoEnd, rhoStepSize): 
+            trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
+                                    workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
+                                    sensitivity=SENSITIVITY, numWorkloads=numWorkloads)
+            
+            designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rhoMultiplier=rhoMultiplier)
+            table.append([epsilon, robustCost, nominalCost, trial.rhoExpected, rhoMultiplier, trial.rhoTrue])
 
     with open(file_path, "w", newline='') as file:
         writer = csv.writer(file)
@@ -62,7 +71,7 @@ for workloadType in workloadTypes:
     
 
     
-    end_time = time.time()  # End timer
+    end_time = time.time()  
     print(f"{workloadType} trial: {end_time - start_time:.4f} seconds")
     
 

@@ -26,8 +26,7 @@ class nWorkloadsTrial:
          - workload scaler: used for the Laplace mechanism (we will convert percentages to raw numbers)
          - noise scaler: used for Laplace mechanism (scales noise)
          - sensitivity: used for Laplace mechanism 
-         - numWorkloads: number of workloads generated to calculated rhoExpected 
-         - rhoMethod: method used to calculate expected rho (either average or max)
+         - numWorkloads: number of workloads generated to calculated rhoExpected
 
         Attributes
          - originalWorkload: true workload (hidden from the robust tuner)
@@ -37,14 +36,14 @@ class nWorkloadsTrial:
          - rhoTrue: true rho between originalWorkload and perturbedWorkload 
     """
     def __init__(self, originalWorkload: Workload, epsilon:float, workloadScaler:int, noiseScaler:int, 
-                 sensitivity:float=1, numWorkloads:int=10, rhoMethod: str='max'):
+                 sensitivity:float=1, numWorkloads:int=10):
         self.originalWorkload = originalWorkload
         self.epsilon = epsilon
         self.perturbedWorkload = self.get_perturbed_workload(originalWorkload=originalWorkload, sensitivity=sensitivity, 
                                                 epsilon=epsilon, noiseScaler=noiseScaler, workloadScaler=workloadScaler)
         self.rhoExpected = self.get_expected_rho(originalWorkload=originalWorkload, sensitivity=sensitivity, 
                                          epsilon=epsilon, noiseScaler=noiseScaler, workloadScaler=workloadScaler, 
-                                         numWorkloads=numWorkloads, method=rhoMethod)
+                                         numWorkloads=numWorkloads)
         self.rhoTrue = self.find_KL(originalWorkload, self.perturbedWorkload)
         
 
@@ -52,7 +51,7 @@ class nWorkloadsTrial:
         Runs one experimental trial 
         numTunings: the number of robust trials done before choosing the robust trial with the lowest cost
     """
-    def run_trial(self, numTunings:int=10): 
+    def run_trial(self, rhoMultiplier, numTunings:int=10): 
         bounds = LSMBounds()
         gen = ClassicGen(bounds, seed=42)
         system = gen.sample_system()
@@ -64,9 +63,10 @@ class nWorkloadsTrial:
         nominalCost = costCalculator.calc_cost(designNominal, system, self.originalWorkload)
 
         # find best robust tuning 
-        designRobust = self.get_best_robust_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator)
+        designRobust = self.get_best_robust_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator, rhoMultiplier=rhoMultiplier)
         # find the true cost of the robust tuning using the original workload
         robustCost = costCalculator.calc_cost(designRobust, system, self.originalWorkload)
+
         return designNominal, designRobust, nominalCost, robustCost
     
     
@@ -76,10 +76,11 @@ class nWorkloadsTrial:
         The robust tuner does not have access to the original workload, which means it 
         also does not have access to the true rho 
     """
-    def get_best_robust_tuning(self, bounds: LSMBounds, numTunings, solver, system, costFunc): 
+    def get_best_robust_tuning(self, bounds: LSMBounds, numTunings, solver, system, costFunc, rhoMultiplier): 
         best_cost = np.inf
         bestDesign = None
         costs = []
+        rho = self.rhoExpected * rhoMultiplier
 
         # repeat until we find a valid result
         while best_cost == np.inf: 
@@ -94,7 +95,7 @@ class nWorkloadsTrial:
                     warnings.simplefilter("always", category=RuntimeWarning)  
 
                     designRobust, scipy_opt_obj_robust = solver.get_robust_design(
-                        system, self.perturbedWorkload, rho=self.rhoExpected, 
+                        system, self.perturbedWorkload, rho=rho, 
                         init_args=[H, T, LAMBDA, ETA]
                     )
 
@@ -119,14 +120,17 @@ class nWorkloadsTrial:
         Finds the expected rho through a list of n workloads 
         Default is choosing the one with the greatest KL divergence 
     """
-    def get_expected_rho(self, originalWorkload, sensitivity, epsilon, noiseScaler, workloadScaler, numWorkloads, method:str="max"): 
+    def get_expected_rho(self, originalWorkload, sensitivity, epsilon, noiseScaler, workloadScaler, numWorkloads): 
         # generate a list of n different workloads 
-        n_workloads = self.get_n_perturbed_workloads(originalWorkload, numWorkloads, noiseScaler, sensitivity, epsilon, workloadScaler)
+        perturbedWorkloadList = self.get_n_perturbed_workloads(originalWorkload, numWorkloads, noiseScaler, sensitivity, epsilon, workloadScaler)
 
-        if method == 'avg': 
-            expectedRho = self.get_avg_KL(n_workloads, originalWorkload)
-        else: 
-            expectedRho = self.get_max_KL(n_workloads, originalWorkload)
+        maxKLDistance = -np.inf
+        for workload in perturbedWorkloadList:
+            d = self.find_KL(originalWorkload, workload)
+            if d > maxKLDistance:
+                maxKLDistance = d
+
+        expectedRho = maxKLDistance
 
         return expectedRho
 
@@ -168,29 +172,6 @@ class nWorkloadsTrial:
     def get_KL(self, p, q):
         if len(p) != len(q):
             raise ValueError("Lists must have the same length.")
+        
         result = sum([(p[i]*np.log(p[i]/q[i])) for i in range(len(p))])
         return result
-
-
-    """
-        finds the maximum KL divergence between perturbed workloads and
-        the original workload
-    """
-    def get_max_KL(self, perturbedWorkloadList, originalWorkload): 
-        maxKLDistance = -np.inf
-        for workload in perturbedWorkloadList:
-            d = self.find_KL(originalWorkload, workload)
-            if d > maxKLDistance:
-                maxKLDistance = d
-        return maxKLDistance
-    
-
-    """
-        averages the KL divergence amongst n workloads 
-    """
-    def get_avg_KL(self, perturbedWorkloadList, originalWorkload): 
-        distanceSum = 0
-        for workload in perturbedWorkloadList:
-            distanceSum += self.find_KL(originalWorkload, workload)
-            
-        return distanceSum/(len(perturbedWorkloadList))
