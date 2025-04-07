@@ -26,7 +26,7 @@ SENSITIVITY = 1              # amount the function's output will change when its
 ###############################################
 workloadTypes    = list(ExpectedWorkload)                                         # loads all workloads 
 #workloadTypes    = [ExpectedWorkload.BIMODAL_1, ExpectedWorkload.BIMODAL_2, ExpectedWorkload.BIMODAL_3, ExpectedWorkload.BIMODAL_4, ExpectedWorkload.BIMODAL_5, ExpectedWorkload.BIMODAL_6]
-subdirectory     = "experiment_results/rho_multiples_fixed_nominal"               # save results to the correct folder
+subdirectory     = "experiment_results/rho_multiples"                             # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
 
 numWorkloads     = 10                                                             # number of workloads to establish rho with
@@ -64,7 +64,7 @@ for workloadType in workloadTypes:
         for rhoMultiplier in np.arange(rhoStart, rhoEnd, rhoStepSize): 
             
             designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rhoMultiplier=rhoMultiplier)
-            table.append([epsilon, robustCost, nominalCost, trial.rhoExpected, rhoMultiplier, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
+            table.append([epsilon, robustCost, nominalCost, rhoMultiplier, trial.rhoExpected, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
 
     with open(file_path, "w", newline='') as file:
         writer = csv.writer(file)
