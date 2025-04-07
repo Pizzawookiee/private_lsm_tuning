@@ -25,9 +25,8 @@ SENSITIVITY = 1              # amount the function's output will change when its
 #    EXPERIMENT SETUP (check workload_types)
 ###############################################
 #workloadTypes    = list(ExpectedWorkload)                                         # loads all workloads 
-workloadTypes    = [ExpectedWorkload.UNIFORM, ExpectedWorkload.UNIMODAL_1,
-                    ExpectedWorkload.UNIMODAL_2, ExpectedWorkload.UNIMODAL_3, 
-                    ExpectedWorkload.UNIMODAL_4]
+workloadTypes    = [ExpectedWorkload.BIMODAL_1, ExpectedWorkload.BIMODAL_2, ExpectedWorkload.BIMODAL_3,
+ExpectedWorkload.BIMODAL_4, ExpectedWorkload.BIMODAL_5, ExpectedWorkload.BIMODAL_6]
 subdirectory     = "experiment_results/rho_multiples"                            # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
 
