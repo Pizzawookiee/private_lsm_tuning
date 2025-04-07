@@ -39,6 +39,7 @@ class nWorkloadsTrial:
                  sensitivity:float=1, numWorkloads:int=10):
         self.originalWorkload = originalWorkload
         self.epsilon = epsilon
+        self.bestNominalDesign = None
         self.perturbedWorkload = self.get_perturbed_workload(originalWorkload=originalWorkload, sensitivity=sensitivity, 
                                                 epsilon=epsilon, noiseScaler=noiseScaler, workloadScaler=workloadScaler)
         self.rhoExpected = self.get_expected_rho(originalWorkload=originalWorkload, sensitivity=sensitivity, 
@@ -59,7 +60,8 @@ class nWorkloadsTrial:
         costCalculator = Cost(bounds.max_considered_levels)
 
         # find ideal tuning
-        designNominal, scipy_opt_obj_ideal = solver.get_nominal_design(system, self.originalWorkload)
+        if self.bestNominalDesign == None: 
+            designNominal = self.get_best_nominal_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator)
         nominalCost = costCalculator.calc_cost(designNominal, system, self.originalWorkload)
 
         # find best robust tuning 
@@ -69,6 +71,45 @@ class nWorkloadsTrial:
 
         return designNominal, designRobust, nominalCost, robustCost
     
+    """
+        Find the best (lowest cost) out of n robust tunings. 
+        The robust tuner does not have access to the original workload, which means it 
+        also does not have access to the true rho 
+    """
+    def get_best_nominal_tuning(self, bounds: LSMBounds, numTunings, solver, system, costFunc): 
+        best_cost = np.inf
+        bestDesign = None
+        costs = []
+
+        # repeat until we find a valid result
+        while best_cost == np.inf: 
+            for _ in range(numTunings): 
+                # Randomly choose init args for the tuner 
+                H = np.random.randint(bounds.bits_per_elem_range[0], bounds.bits_per_elem_range[1])
+                T = np.random.uniform(bounds.size_ratio_range[0], bounds.size_ratio_range[1])
+
+                with warnings.catch_warnings(record=True) as caught_warnings:
+                    warnings.simplefilter("always", category=RuntimeWarning)  
+
+                    design, scipy_opt_obj_robust = solver.get_nominal_design(
+                        system, self.originalWorkload, init_args=[H, T]
+                    )
+
+                    # Cost is calculated based on the perturbed workload (expected cost)
+                    current_cost = costFunc.calc_cost(design, system, self.originalWorkload)
+
+                    if any("overflow" in str(w.message).lower() for w in caught_warnings):
+                        #print("Skip tuning")
+                        continue
+                    else: 
+                        costs += [current_cost]
+
+                    # update best cost if no warnings were caught 
+                    if (current_cost < best_cost): 
+                        best_cost = current_cost
+                        bestDesign = design
+                   
+        return bestDesign
     
 
     """
