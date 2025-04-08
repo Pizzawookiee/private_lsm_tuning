@@ -26,7 +26,7 @@ SENSITIVITY = 1              # amount the function's output will change when its
 ###############################################
 #workloadTypes    = list(ExpectedWorkload)                                         # loads all workloads 
 workloadTypes    = [ExpectedWorkload.TRIMODAL_1, ExpectedWorkload.TRIMODAL_2, 
-                    ExpectedWorkload.TRIMODAL_3, ExpectedWorkload.TRIMODAL_4]
+                    ExpectedWorkload.TRIMODAL_3]
 subdirectory     = "experiment_results/rho_multiples"                             # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
 
@@ -38,6 +38,8 @@ stepSize         = 0.05
 rhoStart         = 0.25
 rhoEnd           = 2
 rhoStepSize      = 0.25
+
+NUM_TRIALS       = 5
 
 
 
@@ -56,16 +58,17 @@ for workloadType in workloadTypes:
     table.append(header)
 
     # run trials 
-    for epsilon in np.arange(epsilonStart, epsilonEnd, stepSize):
-        # use the same workload for all rho multipliers
-        trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
-                                workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
-                                sensitivity=SENSITIVITY, numWorkloads=numWorkloads)
-         
-        for rhoMultiplier in np.arange(rhoStart, rhoEnd, rhoStepSize): 
+    for i in range(NUM_TRIALS):
+        for epsilon in np.arange(epsilonStart, epsilonEnd, stepSize):
+            # use the same workload for all rho multipliers
+            trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
+                                    workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
+                                    sensitivity=SENSITIVITY, numWorkloads=numWorkloads)
             
-            designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rhoMultiplier=rhoMultiplier)
-            table.append([epsilon, robustCost, nominalCost, rhoMultiplier, trial.rhoExpected, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
+            for rhoMultiplier in np.arange(rhoStart, rhoEnd, rhoStepSize): 
+                
+                designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rhoMultiplier=rhoMultiplier)
+                table.append([epsilon, robustCost, nominalCost, rhoMultiplier, trial.rhoExpected, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
 
     with open(file_path, "w", newline='') as file:
         writer = csv.writer(file)
