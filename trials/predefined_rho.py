@@ -75,7 +75,6 @@ class predefinedRhoTrial:
     def get_best_nominal_tuning(self, bounds: LSMBounds, numTunings, solver, system, costFunc): 
         best_cost = np.inf
         bestDesign = None
-        costs = []
 
         # repeat until we find a valid result
         while best_cost == np.inf: 
@@ -136,10 +135,7 @@ class predefinedRhoTrial:
                     current_cost = costFunc.calc_cost(designRobust, system, self.perturbedWorkload)
 
                     if any("overflow" in str(w.message).lower() for w in caught_warnings):
-                        #print("Skip tuning")
                         continue
-                    else: 
-                        costs += [current_cost]
 
                     # update best cost if no warnings were caught 
                     if (current_cost < best_cost): 
