@@ -36,7 +36,7 @@ epsilonEnd       = 1.05                                                         
 stepSize         = 0.05               
 
 rhoStart         = 0
-rhoEnd           = 2
+rhoEnd           = 2.1
 rhoStepSize      = 0.1
 
 

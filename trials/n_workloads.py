@@ -62,6 +62,8 @@ class nWorkloadsTrial:
         # find ideal tuning
         if self.bestNominalDesign == None: 
             designNominal = self.get_best_nominal_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator)
+        
+        designNominal = self.bestNominalDesign
         nominalCost = costCalculator.calc_cost(designNominal, system, self.originalWorkload)
 
         # find best robust tuning 

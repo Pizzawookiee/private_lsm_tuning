@@ -26,7 +26,7 @@ SENSITIVITY = 1              # amount the function's output will change when its
 ###############################################
 #workloadTypes    = list(ExpectedWorkload)                                         # loads all workloads 
 workloadTypes    = [ExpectedWorkload.TRIMODAL_1, ExpectedWorkload.TRIMODAL_2, 
-                    ExpectedWorkload.TRIMODAL_3]
+                    ExpectedWorkload.TRIMODAL_3, ExpectedWorkload.TRIMODAL_4]
 subdirectory     = "experiment_results/rho_multiples"                             # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
 

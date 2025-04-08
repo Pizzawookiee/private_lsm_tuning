@@ -38,7 +38,7 @@ rhoStart         = 0.25
 rhoEnd           = 2
 rhoStepSize      = 0.25
 
-
+NUM_TRIALS       = 30
 
 
 for workloadType in workloadTypes: 
@@ -53,7 +53,7 @@ for workloadType in workloadTypes:
     table.append(header)
 
     # run trials 
-    for i in range (30): 
+    for i in range (NUM_TRIALS): 
         start_time = time.time()
         for epsilon in np.arange(epsilonStart, epsilonEnd, stepSize):
             # use the same workload for all rho multipliers
