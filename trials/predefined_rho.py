@@ -1,7 +1,6 @@
 """
     Simulates a trial that creates n noisy workloads 
-    Rho is the maximum KL distnace between the original workload 
-    and a noisy workload. 
+    Rho is predefined by user
     Robust tuning is calculated based on the average of n workloads.
 """
 
@@ -17,7 +16,7 @@ from differential_privacy import LaplaceMechanism
 import numpy as np
 import warnings
 
-class nWorkloadsTrial: 
+class predefinedRhoTrial: 
     """
         Initializes an experimental trial 
         Inputs: 
@@ -42,9 +41,6 @@ class nWorkloadsTrial:
         self.bestNominalDesign = None
         self.perturbedWorkload = self.get_perturbed_workload(originalWorkload=originalWorkload, sensitivity=sensitivity, 
                                                 epsilon=epsilon, noiseScaler=noiseScaler, workloadScaler=workloadScaler)
-        self.rhoExpected = self.get_expected_rho(originalWorkload=originalWorkload, sensitivity=sensitivity, 
-                                         epsilon=epsilon, noiseScaler=noiseScaler, workloadScaler=workloadScaler, 
-                                         numWorkloads=numWorkloads)
         self.rhoTrue = self.find_KL(originalWorkload, self.perturbedWorkload)
         
 
@@ -52,7 +48,7 @@ class nWorkloadsTrial:
         Runs one experimental trial 
         numTunings: the number of robust trials done before choosing the robust trial with the lowest cost
     """
-    def run_trial(self, rhoMultiplier, numTunings:int=10): 
+    def run_trial(self, rho, numTunings:int=10): 
         bounds = LSMBounds()
         gen = ClassicGen(bounds, seed=42)
         system = gen.sample_system()
@@ -65,7 +61,7 @@ class nWorkloadsTrial:
         nominalCost = costCalculator.calc_cost(designNominal, system, self.originalWorkload)
 
         # find best robust tuning 
-        designRobust = self.get_best_robust_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator, rhoMultiplier=rhoMultiplier)
+        designRobust = self.get_best_robust_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator, rho=rho)
         # find the true cost of the robust tuning using the original workload
         robustCost = costCalculator.calc_cost(designRobust, system, self.originalWorkload)
 
@@ -79,6 +75,7 @@ class nWorkloadsTrial:
     def get_best_nominal_tuning(self, bounds: LSMBounds, numTunings, solver, system, costFunc): 
         best_cost = np.inf
         bestDesign = None
+        costs = []
 
         # repeat until we find a valid result
         while best_cost == np.inf: 
@@ -114,11 +111,9 @@ class nWorkloadsTrial:
         The robust tuner does not have access to the original workload, which means it 
         also does not have access to the true rho 
     """
-    def get_best_robust_tuning(self, bounds: LSMBounds, numTunings, solver, system, costFunc, rhoMultiplier): 
+    def get_best_robust_tuning(self, bounds: LSMBounds, numTunings, solver, system, costFunc, rho): 
         best_cost = np.inf
         bestDesign = None
-        costs = []
-        rho = self.rhoExpected * rhoMultiplier
 
         # repeat until we find a valid result
         while best_cost == np.inf: 
