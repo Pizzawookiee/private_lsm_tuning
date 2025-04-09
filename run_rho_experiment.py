@@ -25,8 +25,9 @@ SENSITIVITY = 1              # amount the function's output will change when its
 #    EXPERIMENT SETUP (check workload_types)
 ###############################################
 #workloadTypes    = list(ExpectedWorkload)                                         # loads all workloads 
-workloadTypes    = [ExpectedWorkload.TRIMODAL_1, ExpectedWorkload.TRIMODAL_2, 
-                    ExpectedWorkload.TRIMODAL_3, ExpectedWorkload.TRIMODAL_4]
+workloadTypes    = [ExpectedWorkload.UNIFORM, ExpectedWorkload.UNIMODAL_1, 
+                    ExpectedWorkload.UNIMODAL_2, ExpectedWorkload.UNIMODAL_3,
+                    ExpectedWorkload.UNIMODAL_4]
 subdirectory     = "experiment_results/rho_stepwise"                              # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
 
