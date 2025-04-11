@@ -24,9 +24,8 @@ SENSITIVITY = 1              # amount the function's output will change when its
 ###############################################
 #    EXPERIMENT SETUP (check workload_types)
 ###############################################
-#workloadTypes    = list(ExpectedWorkload)                                         # loads all workloads 
-workloadTypes    = [ExpectedWorkload.TRIMODAL_1, ExpectedWorkload.TRIMODAL_2, 
-                    ExpectedWorkload.TRIMODAL_3, ExpectedWorkload.TRIMODAL_4]
+workloadTypes    = list(ExpectedWorkload)                                         # loads all workloads 
+#workloadTypes    = [ExpectedWorkload.UNIFORM]
 subdirectory     = "experiment_results/rho_multiples"                             # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
 
@@ -66,7 +65,6 @@ for workloadType in workloadTypes:
                                     sensitivity=SENSITIVITY, numWorkloads=numWorkloads)
             
             for rhoMultiplier in np.arange(rhoStart, rhoEnd, rhoStepSize): 
-                
                 designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rhoMultiplier=rhoMultiplier)
                 table.append([epsilon, robustCost, nominalCost, rhoMultiplier, trial.rhoExpected, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
 

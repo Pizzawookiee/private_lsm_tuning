@@ -59,19 +59,18 @@ class nWorkloadsTrial:
         solver = ClassicSolver(bounds)
         costCalculator = Cost(bounds.max_considered_levels)
 
-        # find ideal tuning
+        # find ideal tuning & save it across multiple rho trials 
         if self.bestNominalDesign == None: 
-            designNominal = self.get_best_nominal_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator)
+            self.bestNominalDesign = self.get_best_nominal_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator)
         
-        designNominal = self.bestNominalDesign
-        nominalCost = costCalculator.calc_cost(designNominal, system, self.originalWorkload)
+        nominalCost = costCalculator.calc_cost(self.bestNominalDesign, system, self.originalWorkload)
 
         # find best robust tuning 
         designRobust = self.get_best_robust_tuning(bounds=bounds, numTunings=numTunings, solver=solver, system=system, costFunc=costCalculator, rhoMultiplier=rhoMultiplier)
         # find the true cost of the robust tuning using the original workload
         robustCost = costCalculator.calc_cost(designRobust, system, self.originalWorkload)
 
-        return designNominal, designRobust, nominalCost, robustCost
+        return self.bestNominalDesign, designRobust, nominalCost, robustCost
     
     """
         Find the best (lowest cost) out of n robust tunings. 
