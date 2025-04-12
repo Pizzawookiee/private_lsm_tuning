@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 import matplotlib.colors as mcolors
+from matplotlib.colors import Normalize
+
 
 def generate_outline_colors():
     colors = []
@@ -22,6 +24,7 @@ def generate_outline_colors():
 def extract_probabilities_2d(workload_str): 
     pattern = r"[-+]?\d*\.\d+(?:[eE][-+]?\d+)?"
     probs = [float(num) for num in re.findall(pattern, workload_str)]
+    # (q, w, z0+z1)
     return [probs[2], probs[3], probs[0] + probs[1]]
 
 
@@ -36,7 +39,11 @@ def parse_workload_list_2d(workload_list):
         
     return x, y, gradient
 
-def plot_workload_2d(df):
+def plot_workload_2d(filename, outline_size=2, color_range=None):
+    df = pd.read_csv(filename)
+    name = filename.split('.')[0]
+    name = name.split('_')[0]
+    name = name.capitalize()
     workloads = df.groupby(['Epsilon', 'Workload (True)'])['Workload (Perturbed)'].apply(np.array).reset_index()
     fig, ax = plt.subplots(figsize=(7, 4))
 
@@ -45,6 +52,11 @@ def plot_workload_2d(df):
 
     epsilon_values = sorted(workloads['Epsilon'].unique())
     outline_colors = generate_outline_colors()
+
+    if color_range is None:
+        norm = None  # Automatically scale the color range
+    else:
+        norm = Normalize(vmin=color_range[0], vmax=color_range[1])
 
     for idx, epsilon in enumerate(epsilon_values):
         matching = workloads[(workloads['Workload (True)'] == og) & 
@@ -57,15 +69,17 @@ def plot_workload_2d(df):
 
             ax.scatter(x, y, c=grad, cmap='plasma', s=100,
                        edgecolor=outline_colors[idx % len(outline_colors)],
-                       linewidth=3, label=rf'$\varepsilon$={round(epsilon, 2)}')
+                       linewidth=outline_size, label=rf'$\varepsilon$={round(epsilon, 2),}', 
+                       norm=norm)
 
     ax.scatter([og_vals[0]], [og_vals[1]], c=[og_vals[2]], cmap='plasma',
-               edgecolor='red', linewidth=3, s=100, label='True Workload')
+               edgecolor='red', linewidth=outline_size, s=100, label='True Workload', 
+               norm=norm)
 
     fig.colorbar(ax.collections[0], ax=ax, label='Point Queries\n(z0 + z1)')
     ax.set_xlabel('Reads')
     ax.set_ylabel('Writes')
-    ax.set_title(f'Trimodal: {og_vals}')
+    ax.set_title(f'{name} Distribution: {og_vals}')
     ax.grid(True)
     
     legend_handles = [
