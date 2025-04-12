@@ -163,15 +163,13 @@ class nWorkloadsTrial:
         # generate a list of n different workloads 
         perturbedWorkloadList = self.get_n_perturbed_workloads(originalWorkload, numWorkloads, noiseScaler, sensitivity, epsilon, workloadScaler)
 
-        maxKLDistance = -np.inf
+        maxKLDivergence = -np.inf
         for workload in perturbedWorkloadList:
             d = self.find_KL(originalWorkload, workload)
-            if d > maxKLDistance:
-                maxKLDistance = d
+            if d > maxKLDivergence:
+                maxKLDivergence = d
 
-        expectedRho = maxKLDistance
-
-        return expectedRho
+        return maxKLDivergence
 
 
     """
