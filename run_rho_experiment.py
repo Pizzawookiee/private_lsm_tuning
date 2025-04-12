@@ -31,13 +31,13 @@ workloadTypes    = [ExpectedWorkload.UNIFORM, ExpectedWorkload.UNIMODAL_1,
 subdirectory     = "experiment_results/rho_stepwise"                              # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
 
-numWorkloads     = 10                                                             # number of workloads to establish rho with
+numWorkloads     = 1                                                             # number of workloads to establish rho with
 epsilonStart     = 0.05                                                           # epsilon start (inclusive)
 epsilonEnd       = 1.05                                                           # epsilon end   (exclusive)
 stepSize         = 0.05               
 
 rhoStart         = 0
-rhoEnd           = 2.1
+rhoEnd           = 0.1
 rhoStepSize      = 0.1
 
 
@@ -66,7 +66,7 @@ for workloadType in workloadTypes:
         for rho in np.arange(rhoStart, rhoEnd, rhoStepSize): 
             designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rho=rho)
             table.append([epsilon, robustCost, nominalCost, rho, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
-
+    
     with open(file_path, "w", newline='') as file:
         writer = csv.writer(file)
         writer.writerows(table)

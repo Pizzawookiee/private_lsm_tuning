@@ -4,7 +4,7 @@
     Robust tuning is calculated based on the average of n workloads.
 """
 
-from .util import workloadToList, workloadListToListOfLists, listToWorkload
+from .util import get_perturbed_workload, get_KL_divergence
 from endure.solver import ClassicSolver
 from endure.lsm import (
     Cost,
@@ -12,7 +12,6 @@ from endure.lsm import (
     ClassicGen,
     Workload
 )
-from differential_privacy import LaplaceMechanism
 import numpy as np
 import warnings
 
@@ -39,9 +38,9 @@ class predefinedRhoTrial:
         self.originalWorkload = originalWorkload
         self.epsilon = epsilon
         self.bestNominalDesign = None
-        self.perturbedWorkload = self.get_perturbed_workload(originalWorkload=originalWorkload, sensitivity=sensitivity, 
+        self.perturbedWorkload = get_perturbed_workload(originalWorkload=originalWorkload, sensitivity=sensitivity, 
                                                 epsilon=epsilon, noiseScaler=noiseScaler, workloadScaler=workloadScaler)
-        self.rhoTrue = self.find_KL(originalWorkload, self.perturbedWorkload)
+        self.rhoTrue = get_KL_divergence(originalWorkload, self.perturbedWorkload)
         
 
     """
@@ -67,6 +66,7 @@ class predefinedRhoTrial:
 
         return designNominal, designRobust, nominalCost, robustCost
     
+
     """
         Find the best (lowest cost) out of n robust tunings. 
         The robust tuner does not have access to the original workload, which means it 
@@ -144,63 +144,3 @@ class predefinedRhoTrial:
                    
         return bestDesign
     
-
-    """
-        Finds the expected rho through a list of n workloads 
-        Default is choosing the one with the greatest KL divergence 
-    """
-    def get_expected_rho(self, originalWorkload, sensitivity, epsilon, noiseScaler, workloadScaler, numWorkloads): 
-        # generate a list of n different workloads 
-        perturbedWorkloadList = self.get_n_perturbed_workloads(originalWorkload, numWorkloads, noiseScaler, sensitivity, epsilon, workloadScaler)
-
-        maxKLDistance = -np.inf
-        for workload in perturbedWorkloadList:
-            d = self.find_KL(originalWorkload, workload)
-            if d > maxKLDistance:
-                maxKLDistance = d
-
-        expectedRho = maxKLDistance
-
-        return expectedRho
-
-
-    """
-        Produces one perturbed workload 
-    """
-    def get_perturbed_workload(self, originalWorkload, noiseScaler, sensitivity, epsilon, workloadScaler):
-        mechanism = LaplaceMechanism(workloadScaler=workloadScaler, noiseScaler=noiseScaler, sensitivity=sensitivity, epsilon=epsilon)
-        originalWorkload = workloadToList(originalWorkload)
-        perturbedWorkload = mechanism.perturb(originalWorkload)
-        perturbedWorkload = listToWorkload(perturbedWorkload)
-        return perturbedWorkload
-    
-
-    """
-        Produces n perturbed workloads
-    """
-    def get_n_perturbed_workloads(self, originalWorkload, numWorkloads: int, noiseScaler, sensitivity, epsilon, workloadScaler): 
-        perturbedWorkloads = []
-        for i in range(numWorkloads): 
-            pWorkload = self.get_perturbed_workload(originalWorkload=originalWorkload, noiseScaler=noiseScaler, sensitivity=sensitivity, epsilon=epsilon, workloadScaler=workloadScaler)
-            perturbedWorkloads.append(pWorkload)
-        return perturbedWorkloads
-
-
-    """
-        Wrapper method that converts workload types to list first
-    """
-    def find_KL(self, w1, w2): 
-        w1=workloadToList(w1)
-        w2=workloadToList(w2)
-        return self.get_KL(w1, w2)
-    
-
-    """
-        KL distance between two probability distributions 
-    """
-    def get_KL(self, p, q):
-        if len(p) != len(q):
-            raise ValueError("Lists must have the same length.")
-        
-        result = sum([(p[i]*np.log(p[i]/q[i])) for i in range(len(p))])
-        return result

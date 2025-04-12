@@ -39,7 +39,7 @@ rhoStart         = 0.25
 rhoEnd           = 2
 rhoStepSize      = 0.25
 
-NUM_TRIALS       = 5
+NUM_TRIALS       = 1
 
 
 
@@ -68,7 +68,7 @@ for workloadType in workloadTypes:
             for rhoMultiplier in np.arange(rhoStart, rhoEnd, rhoStepSize): 
                 designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rhoMultiplier=rhoMultiplier)
                 table.append([epsilon, robustCost, nominalCost, rhoMultiplier, trial.rhoExpected, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
-
+    
     with open(file_path, "w", newline='') as file:
         writer = csv.writer(file)
         writer.writerows(table)
