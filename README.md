@@ -11,7 +11,7 @@ Noah Picarelli-Kombert (noahpk@bu.edu)
 David Lee (dtlee@bu.edu)
 
 ## Project Structure
-.
+```
 ├── differential_privacy/           # Mechanisms to apply differential privacy
 │   └── laplace_mechanism.py        # Uses the Laplace mechanism to apply differential privacy
 │
@@ -38,7 +38,7 @@ David Lee (dtlee@bu.edu)
 ├── run_multiples_experiment.py    # Runs the rho multiples experiment with specified settings
 ├── run_errorbar_experiment.py     # Runs the error bar experiment with specified settings
 └── run_stepwise_experiment.py     # Runs the stepwise rho experiment with specified settings
-
+```
 
 ## How to run
 1. Rho multiples experiment: an experiment on how decreasing / increasing expected rho affects robust tuning costs
