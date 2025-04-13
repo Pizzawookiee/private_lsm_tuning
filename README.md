@@ -4,7 +4,6 @@ This repository holds the API used for the privacy-preserving LSM tuning project
 The original document can be found on the class website [CS 561](https://bu-disc.github.io/CS561/projects/research/CS561-S25-Research-Endure-DP-workload.pdf)
 
 ## Contributors
----------------------------------------------------------------------------
 Kathlyn F. Sinaga (kathlyn@bu.edu)
 
 Noah Picarelli-Kombert (noahpk@bu.edu)
@@ -12,7 +11,6 @@ Noah Picarelli-Kombert (noahpk@bu.edu)
 David Lee (dtlee@bu.edu)
 
 ## Project Structure
----------------------------------------------------------------------------
 - differential_privacy: mechanisms to apply differential privacy 
     - laplace_mechanism.py: use the laplace mechanism to apply differential privacy 
 - endure
@@ -36,7 +34,6 @@ David Lee (dtlee@bu.edu)
 - run_stepwise_experiment.py: runs a stepwise rho experiment based on settings given 
 
 ## How to run
----------------------------------------------------------------------------
 1. Rho multiples experiment: an experiment on how decreasing / increasing expected rho affects robust tuning costs
     ```
     python run_multiples_experiment.py
