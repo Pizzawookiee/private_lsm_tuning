@@ -11,7 +11,7 @@ Noah Picarelli-Kombert (noahpk@bu.edu)
 David Lee (dtlee@bu.edu)
 
 ## Project Structure
-.
+```
 ├── differential_privacy/           # Mechanisms to apply differential privacy
 │   └── laplace_mechanism.py        # Uses the Laplace mechanism to apply differential privacy
 │
@@ -22,7 +22,7 @@ David Lee (dtlee@bu.edu)
 ├── experiment_results/            # Data collected from different experiments
 │   ├── rho_multiples/             # Data from rho multiples experiment (15 workload types)
 │   ├── rho_stepwise/              # Data from stepwise rho experiment (15 workload types)
-│   └── uniform_errorbars.csv      # Data from the error bar experiment
+│   └── uniform_errorbars.csv      # Data from the error bar experiment (1 workload type)
 │
 ├── notebook/                          # Jupyter notebooks used to process and visualize data
 │   ├── data_utils.py                  # Custom module to plot workload graphs
@@ -38,18 +38,18 @@ David Lee (dtlee@bu.edu)
 ├── run_multiples_experiment.py    # Runs the rho multiples experiment with specified settings
 ├── run_errorbar_experiment.py     # Runs the error bar experiment with specified settings
 └── run_stepwise_experiment.py     # Runs the stepwise rho experiment with specified settings
-
+```
 
 ## How to run
-1. Rho multiples experiment: an experiment on how decreasing / increasing expected rho affects robust tuning costs
+1. **Rho multiples experiment**: an experiment on how decreasing / increasing expected rho affects robust tuning costs
     ```
     python run_multiples_experiment.py
     ```
-2. Error bar experiment: an experiment that runs 30 trial on a Uniform Workload to check the variation in the results we get from the rho multiples experiment
+2. **Error bar experiment**: an experiment that runs 30 trial on a Uniform Workload to check the variation in the results we get from the rho multiples experiment
     ```
     python run_errorbar_experiment.py
     ```
-3. Stepwise rho experiment: an experiment on how different static rho values perform under different privacy levels
+3. **Stepwise rho experiment**: an experiment on how different static rho values perform under different privacy levels
     ```
     python run_stepwise_experiment.py
     ```
