@@ -41,15 +41,15 @@ David Lee (dtlee@bu.edu)
 ```
 
 ## How to run
-1. Rho multiples experiment: an experiment on how decreasing / increasing expected rho affects robust tuning costs
+1. **Rho multiples experiment**: an experiment on how decreasing / increasing expected rho affects robust tuning costs
     ```
     python run_multiples_experiment.py
     ```
-2. Error bar experiment: an experiment that runs 30 trial on a Uniform Workload to check the variation in the results we get from the rho multiples experiment
+2. **Error bar experiment**: an experiment that runs 30 trial on a Uniform Workload to check the variation in the results we get from the rho multiples experiment
     ```
     python run_errorbar_experiment.py
     ```
-3. Stepwise rho experiment: an experiment on how different static rho values perform under different privacy levels
+3. **Stepwise rho experiment**: an experiment on how different static rho values perform under different privacy levels
     ```
     python run_stepwise_experiment.py
     ```
