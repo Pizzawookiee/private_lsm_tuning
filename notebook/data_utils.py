@@ -57,13 +57,14 @@ def parse_workload_list_2d(workload_list):
     color range is used when the min/max of the gradient is pre-defined 
     (for example, based on a global min/max across different experiments)
 """
-def plot_workload_2d(filename, outline_size=2, color_range=None):
+def plot_workload_2d(filename, fig, ax, outline_size=2, 
+                     color_range=None, show_gradient_map=True, show_legend=True, 
+                     xmin=None, ymin=None, xmax=None, ymax=None):
     df = pd.read_csv(filename)
     name = filename.split('.')[0]
-    name = name.split('_')[0]
+    name = name.replace('_', ' ')
     name = name.capitalize()
     workloads = df.groupby(['Epsilon', 'Workload (True)'])['Workload (Perturbed)'].apply(np.array).reset_index()
-    fig, ax = plt.subplots(figsize=(7, 4))
 
     og = workloads.iloc[0]['Workload (True)']
     og_vals = extract_probabilities_2d(og)
@@ -93,24 +94,29 @@ def plot_workload_2d(filename, outline_size=2, color_range=None):
     ax.scatter([og_vals[0]], [og_vals[1]], c=[og_vals[2]], cmap='plasma',
                edgecolor='red', linewidth=outline_size, s=100, label='True Workload', 
                norm=norm)
+    
+    if xmin != None and xmax != None: 
+        ax.set_xlim(xmin, xmax)
+    if ymin != None and ymax != None: 
+        ax.set_ylim(ymin, ymax)
 
-    fig.colorbar(ax.collections[0], ax=ax, label='Point Queries\n(z0 + z1)')
+    if show_gradient_map: 
+        fig.colorbar(ax.collections[0], ax=ax, label='Point Queries\n(z0 + z1)')
+
     ax.set_xlabel('Reads')
     ax.set_ylabel('Writes')
     ax.set_title(f'{name} Distribution: {og_vals}')
     ax.grid(True)
     
-    legend_handles = [
-        Line2D([0], [0], marker='o', color='w', label=rf'$\varepsilon$={round(eps, 2)}',
-               markerfacecolor='white', markeredgecolor=outline_colors[i], markersize=10, linewidth=0)
-        for i, eps in enumerate(epsilon_values)
-    ]
+    if show_legend: 
+        legend_handles = [
+            Line2D([0], [0], marker='o', color='w', label=rf'$\varepsilon$={round(eps, 2)}',
+                markerfacecolor='white', markeredgecolor=outline_colors[i], markersize=10, linewidth=0)
+            for i, eps in enumerate(epsilon_values)]
+        
+        legend_handles.append(
+            Line2D([0], [0], marker='o', color='w', label='True Workload',
+                markerfacecolor='white', markeredgecolor='red', markersize=10, linewidth=0))
 
-    legend_handles.append(
-        Line2D([0], [0], marker='o', color='w', label='True Workload',
-               markerfacecolor='white', markeredgecolor='red', markersize=10, linewidth=0)
-    )
-
-    ax.legend(handles=legend_handles, loc='center left', bbox_to_anchor=(1.3, 0.5))
-    plt.show()
+        ax.legend(handles=legend_handles, loc='center left', bbox_to_anchor=(1.3, 0.5))
 
