@@ -22,7 +22,7 @@ David Lee (dtlee@bu.edu)
 ├── experiment_results/            # Data collected from different experiments
 │   ├── rho_multiples/             # Data from rho multiples experiment (15 workload types)
 │   ├── rho_stepwise/              # Data from stepwise rho experiment (15 workload types)
-│   └── uniform_errorbars.csv      # Data from the error bar experiment
+│   └── uniform_errorbars.csv      # Data from the error bar experiment (1 workload type)
 │
 ├── notebook/                          # Jupyter notebooks used to process and visualize data
 │   ├── data_utils.py                  # Custom module to plot workload graphs
