@@ -2,7 +2,7 @@
     run trials multiple times to check for error bars
 """
 
-from trials.n_workloads import nWorkloadsTrial
+from trials.rho_multiples import RhoMultiplesTrial
 from workload_types import ExpectedWorkload
 import numpy as np
 import os
@@ -12,7 +12,7 @@ import time
 ###############################################
 #    ROBUST DESIGN SOLVER ARGS
 ###############################################
-NUM_TUNINGS = 100      # number of robust designs we try 
+NUM_TUNINGS = 100            # number of robust designs we try 
 
 ###############################################
 #    LAPLACE MECHANISM ARGS
@@ -57,7 +57,7 @@ for workloadType in workloadTypes:
         start_time = time.time()
         for epsilon in np.arange(epsilonStart, epsilonEnd, stepSize):
             # use the same workload for all rho multipliers
-            trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
+            trial = RhoMultiplesTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
                                     workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
                                     sensitivity=SENSITIVITY, numWorkloads=numWorkloads)
             

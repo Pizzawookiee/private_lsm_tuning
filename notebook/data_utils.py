@@ -1,3 +1,7 @@
+"""
+    A custom module to plot workloads 
+"""
+
 import pandas as pd
 import re
 import matplotlib.pyplot as plt
@@ -6,7 +10,9 @@ from matplotlib.lines import Line2D
 import matplotlib.colors as mcolors
 from matplotlib.colors import Normalize
 
-
+"""
+    generates colors for different epsilon values (20 total)
+"""
 def generate_outline_colors():
     colors = []
 
@@ -21,13 +27,19 @@ def generate_outline_colors():
 
     return colors
 
+"""
+    Converts a workload object string into a list and rearranges it into 
+    (q, w, z0 + z1) 
+"""
 def extract_probabilities_2d(workload_str): 
     pattern = r"[-+]?\d*\.\d+(?:[eE][-+]?\d+)?"
     probs = [float(num) for num in re.findall(pattern, workload_str)]
     # (q, w, z0+z1)
     return [probs[2], probs[3], probs[0] + probs[1]]
 
-
+"""
+    creates x, y, and color lists for plotting
+"""
 def parse_workload_list_2d(workload_list):
     workloads = []
     for workload in workload_list: 
@@ -39,6 +51,12 @@ def parse_workload_list_2d(workload_list):
         
     return x, y, gradient
 
+"""
+    plots a scatter plot for the different workloads 
+    an outline is used to indicate epsilon values (line thickness adjustable)
+    color range is used when the min/max of the gradient is pre-defined 
+    (for example, based on a global min/max across different experiments)
+"""
 def plot_workload_2d(filename, outline_size=2, color_range=None):
     df = pd.read_csv(filename)
     name = filename.split('.')[0]

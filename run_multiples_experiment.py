@@ -1,8 +1,8 @@
 """
-    Sweeps through epsilon values
+    Sweeps through rho multipliers 
 """
 
-from trials.n_workloads import nWorkloadsTrial
+from trials.rho_multiples import RhoMultiplesTrial
 from workload_types import ExpectedWorkload
 import numpy as np
 import os
@@ -12,7 +12,7 @@ import time
 ###############################################
 #    ROBUST DESIGN SOLVER ARGS
 ###############################################
-NUM_TUNINGS = 100      # number of robust designs we try 
+NUM_TUNINGS = 100            # number of tuning designs we try 
 
 ###############################################
 #    LAPLACE MECHANISM ARGS
@@ -25,21 +25,23 @@ SENSITIVITY = 1              # amount the function's output will change when its
 #    EXPERIMENT SETUP (check workload_types)
 ###############################################
 workloadTypes    = list(ExpectedWorkload)[4:]                                     # loads all workloads 
-print(workloadTypes)
 #workloadTypes    = [ExpectedWorkload.UNIFORM]
 subdirectory     = "experiment_results/rho_multiples"                             # save results to the correct folder
 os.makedirs(subdirectory, exist_ok=True)
 
 numWorkloads     = 10                                                             # number of workloads to establish rho with
-epsilonStart     = 0.05                                                           # epsilon start (inclusive)
-epsilonEnd       = 1.05                                                           # epsilon end   (exclusive)
+
+# privacy settings
+epsilonStart     = 0.05                                                           
+epsilonEnd       = 1.05                                                           
 stepSize         = 0.05               
 
+# neighborhood settings
 rhoStart         = 0.25
 rhoEnd           = 2
 rhoStepSize      = 0.25
 
-NUM_TRIALS       = 1
+NUM_TRIALS       = 5                                                              # number of times one trial is repeated
 
 
 
@@ -60,15 +62,17 @@ for workloadType in workloadTypes:
     # run trials 
     for i in range(NUM_TRIALS):
         for epsilon in np.arange(epsilonStart, epsilonEnd, stepSize):
-            # use the same workload for all rho multipliers
-            trial = nWorkloadsTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
+            # use the same perturbed and original workload for all rho multipliers
+            trial = RhoMultiplesTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
                                     workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
                                     sensitivity=SENSITIVITY, numWorkloads=numWorkloads)
             
+            # sweep through rho multipliers
             for rhoMultiplier in np.arange(rhoStart, rhoEnd, rhoStepSize): 
                 designNominal, designRobust, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rhoMultiplier=rhoMultiplier)
                 table.append([epsilon, robustCost, nominalCost, rhoMultiplier, trial.rhoExpected, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
     
+    # save file
     with open(file_path, "w", newline='') as file:
         writer = csv.writer(file)
         writer.writerows(table)

@@ -1,2 +1,2 @@
-from .n_workloads import nWorkloadsTrial
-from .predefined_rho import predefinedRhoTrial
+from .rho_multiples import RhoMultiplesTrial
+from .stepwise_rho import StepwiseRhoTrial

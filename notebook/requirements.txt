@@ -1,3 +1,7 @@
 jupyter
 matplotlib
 seaborn
+pandas 
+numpy 
+re 
+IPython
