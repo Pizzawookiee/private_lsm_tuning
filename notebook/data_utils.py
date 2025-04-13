@@ -103,7 +103,7 @@ def plot_workload_2d(filename, fig, ax, outline_size=2,
     if show_gradient_map: 
         fig.colorbar(ax.collections[0], ax=ax, label='Point Queries\n(z0 + z1)')
 
-    ax.set_xlabel('Reads')
+    ax.set_xlabel('Range Queries')
     ax.set_ylabel('Writes')
     ax.set_title(f'{name} Distribution: {og_vals}')
     ax.grid(True)
