@@ -1,8 +1,5 @@
 """
-    Simulates a trial using an expected rho  
-    Expected rho (given to the robust tuner) is calculated based on the maximum 
-    KL Divergence among 10 perturbed workloads.
-    Epsilon ranges from 0.05 to 1
+    Compare nominal vs robust performance on DP workload 
 """
 
 from typing import Tuple, List
