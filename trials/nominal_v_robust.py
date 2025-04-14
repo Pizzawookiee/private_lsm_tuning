@@ -65,7 +65,7 @@ class NominalvRobustTrial:
         
         idealNominalCost = costCalculator.calc_cost(self.bestNominalDesign, system, self.originalWorkload)
 
-        # find nominal tuning on perturbed workload 
+        # find nominal tuning on perturbed workload
         if self.nominalDesign == None: 
             self.nominalDesign = get_best_nominal_tuning(workload=self.perturbedWorkload, 
                                                          bounds=bounds, numTunings=numTunings, 

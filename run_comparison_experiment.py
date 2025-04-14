@@ -3,7 +3,7 @@
     With multipliers [0.25, 1, 1.75]
 """
 
-from trials.rho_multiples import RhoMultiplesTrial
+from trials.nominal_v_robust import NominalvRobustTrial
 from workload_types import ExpectedWorkload
 import numpy as np
 import os
@@ -35,12 +35,10 @@ numWorkloads     = 10                                                           
 # privacy settings
 epsilonStart     = 0.05                                                           
 epsilonEnd       = 1.05                                                           
-stepSize         = 0.05               
+stepSize         = 0.05  
 
-# neighborhood settings
-rhoStart         = 0.25
-rhoEnd           = 2
-rhoStepSize      = 0.25
+# rho multipliers 
+rhoMultiplierList = [0.25, 1, 1.75]
 
 NUM_TRIALS       = 5                                                              # number of times one trial is repeated
 
@@ -64,12 +62,12 @@ for workloadType in workloadTypes:
     for i in range(NUM_TRIALS):
         for epsilon in np.arange(epsilonStart, epsilonEnd, stepSize):
             # use the same perturbed and original workload for all rho multipliers
-            trial = RhoMultiplesTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
+            trial = NominalvRobustTrial(originalWorkload=originalWorkload, epsilon=epsilon, 
                                     workloadScaler=WORKLOAD_SCALER, noiseScaler=NOISE_SCALER, 
                                     sensitivity=SENSITIVITY, numWorkloads=numWorkloads)
             
             # sweep through rho multipliers
-            for rhoMultiplier in np.arange(rhoStart, rhoEnd, rhoStepSize): 
+            for rhoMultiplier in rhoMultiplierList: 
                 idealNominalCost, nominalCost, robustCost = trial.run_trial(numTunings=NUM_TUNINGS, rhoMultiplier=rhoMultiplier)
                 table.append([epsilon, robustCost, nominalCost, idealNominalCost, rhoMultiplier, trial.rhoExpected, trial.rhoTrue, trial.perturbedWorkload, trial.originalWorkload])
     
