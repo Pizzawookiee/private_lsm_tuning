@@ -47,7 +47,7 @@ class NominalvRobustTrial:
         numTunings: the number of designs tried for nominal and robust solvers
     """
     def run_trial(self, rhoMultiplier:float, numTunings:int=10
-                  ) -> Tuple[LSMDesign, LSMDesign, float, float]: 
+                  ) -> Tuple[float, float, float]: 
         
         # initialize objects for Endure solvers
         bounds = LSMBounds()
