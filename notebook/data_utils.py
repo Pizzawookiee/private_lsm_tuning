@@ -9,114 +9,80 @@ import numpy as np
 from matplotlib.lines import Line2D
 import matplotlib.colors as mcolors
 from matplotlib.colors import Normalize
-
-"""
-    generates colors for different epsilon values (20 total)
-"""
-def generate_outline_colors():
-    colors = []
-
-    family_a = plt.cm.Wistia(np.linspace(0.2, 0.8, 4))      
-    family_b = plt.cm.winter(np.linspace(0.3, 0.9, 8))        
-    family_c = plt.cm.Greens(np.linspace(0.3, 0.9, 8))      
-
-    colors.extend([mcolors.to_hex(c) for c in family_a])
-    colors.extend([mcolors.to_hex(c) for c in family_b[:4]])
-    colors.extend([mcolors.to_hex(c) for c in family_b[4:]])
-    colors.extend([mcolors.to_hex(c) for c in family_c])
-
-    return colors
+from mpl_toolkits.mplot3d.axes3d import Axes3D
+import matplotlib.ticker as mtick
 
 """
     Converts a workload object string into a list and rearranges it into 
     (q, w, z0 + z1) 
 """
-def extract_probabilities_2d(workload_str): 
+def extract_probabilities(workload_str): 
     pattern = r"[-+]?\d*\.\d+(?:[eE][-+]?\d+)?"
     probs = [float(num) for num in re.findall(pattern, workload_str)]
     # (q, w, z0+z1)
-    return [probs[2], probs[3], probs[0] + probs[1]]
+    return [probs[0], probs[1], probs[2], probs[3]]
 
 """
     creates x, y, and color lists for plotting
 """
-def parse_workload_list_2d(workload_list):
+def parse_workload_list(workload_list):
     workloads = []
     for workload in workload_list: 
-        workloads += [extract_probabilities_2d(workload)]
+        workloads += [extract_probabilities(workload)]
     
-    x = [workload[0] for workload in workloads]    
-    y = [workload[1] for workload in workloads]    
-    gradient = [workload[2] for workload in workloads]
+    x0 =  np.array([workload[0] for workload in workloads]) 
+    x1 =  np.array([workload[1] for workload in workloads])   
+    y  =  np.array([workload[2] for workload in workloads])   
+    z  =  np.array([workload[3] for workload in workloads])
         
-    return x, y, gradient
+    return x0, x1, y, z
 
 """
-    plots a scatter plot for the different workloads 
-    an outline is used to indicate epsilon values (line thickness adjustable)
-    color range is used when the min/max of the gradient is pre-defined 
-    (for example, based on a global min/max across different experiments)
+    Useful function to extract workload information from a pandas df
 """
-def plot_workload_2d(filename, fig, ax, outline_size=2, 
-                     color_range=None, show_gradient_map=True, show_legend=True, 
-                     xmin=None, ymin=None, xmax=None, ymax=None):
+def format_df_data(filename): 
     df = pd.read_csv(filename)
     name = filename.split('.')[0]
     name = name.replace('_', ' ')
     name = name.capitalize()
     workloads = df.groupby(['Epsilon', 'Workload (True)'])['Workload (Perturbed)'].apply(np.array).reset_index()
-
     og = workloads.iloc[0]['Workload (True)']
-    og_vals = extract_probabilities_2d(og)
+    return extract_probabilities(og), workloads, name
 
+"""
+    plots a scatter plot for the different workloads 
+    adapted from Andy Huynh's plotting function
+"""
+def plot_workload(filename, fig, ax, point_size=100, anchor=(0.2,0.0), show_gradient_map=True, font_size=12):
+    
+    og_vals, workloads, name = format_df_data(filename)
+    
     epsilon_values = sorted(workloads['Epsilon'].unique())
-    outline_colors = generate_outline_colors()
+    ax.set_xlim3d(0, 1), ax.set_ylim3d(1, 0), ax.set_zlim3d(0, 1)
+    ax.set_xticks([0, 0.5, 1]), ax.set_yticks([0, 0.5, 1]), ax.set_zticks([0, 0.5, 1])
+    ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    ax.zaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    edge = ax.plot([0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1], color='black', zorder=3)
 
-    if color_range is None:
-        norm = None  # Automatically scale the color range
-    else:
-        norm = Normalize(vmin=color_range[0], vmax=color_range[1])
+    ax.set_xlabel('Point-Reads\n($z_0$ + $z_1$)', labelpad=15)
+    ax.set_ylabel('Range-Reads (q)', labelpad=10)
+    ax.set_zlabel('Writes (w)', labelpad=5)
 
     for idx, epsilon in enumerate(epsilon_values):
-        matching = workloads[(workloads['Workload (True)'] == og) & 
-                             (workloads['Epsilon'] == epsilon)]
+        matching = workloads[(workloads['Epsilon'] == epsilon)]
 
         if not matching.empty:
             perturbed = np.concatenate(matching['Workload (Perturbed)'].values)
             perturbed = list(set(perturbed))
-            x, y, grad = parse_workload_list_2d(perturbed)
+            z0, z1, q, w = parse_workload_list(perturbed)
+        sc = ax.scatter(z0 + z1, q, w, c=[epsilon]*len(q), s=point_size, cmap='viridis', vmin=0.05, vmax=1)
 
-            ax.scatter(x, y, c=grad, cmap='plasma', s=100,
-                       edgecolor=outline_colors[idx % len(outline_colors)],
-                       linewidth=outline_size, label=rf'$\varepsilon$={round(epsilon, 2),}', 
-                       norm=norm)
-
-    ax.scatter([og_vals[0]], [og_vals[1]], c=[og_vals[2]], cmap='plasma',
-               edgecolor='red', linewidth=outline_size, s=100, label='True Workload', 
-               norm=norm)
+    ax.scatter([og_vals[0]] + [og_vals[1]], [og_vals[2]], [og_vals[3]], c='red', s=point_size, label='True Workload')
+    ax.text(og_vals[0] + og_vals[1], og_vals[2], og_vals[3], 
+            "True", color='red', fontsize=font_size)
+    ax.set_title(name + ": " + str(og_vals))
     
-    if xmin != None and xmax != None: 
-        ax.set_xlim(xmin, xmax)
-    if ymin != None and ymax != None: 
-        ax.set_ylim(ymin, ymax)
-
-    if show_gradient_map: 
-        fig.colorbar(ax.collections[0], ax=ax, label='Point Queries\n(z0 + z1)')
-
-    ax.set_xlabel('Range Queries')
-    ax.set_ylabel('Writes')
-    ax.set_title(f'{name} Distribution: {og_vals}')
-    ax.grid(True)
-    
-    if show_legend: 
-        legend_handles = [
-            Line2D([0], [0], marker='o', color='w', label=rf'$\varepsilon$={round(eps, 2)}',
-                markerfacecolor='white', markeredgecolor=outline_colors[i], markersize=10, linewidth=0)
-            for i, eps in enumerate(epsilon_values)]
-        
-        legend_handles.append(
-            Line2D([0], [0], marker='o', color='w', label='True Workload',
-                markerfacecolor='white', markeredgecolor='red', markersize=10, linewidth=0))
-
-        ax.legend(handles=legend_handles, loc='center left', bbox_to_anchor=(1.3, 0.5))
-
+    if show_gradient_map:
+        cbar = fig.colorbar(sc,anchor=anchor)
+        cbar.set_label(r'Privacy Level ($\varepsilon$)')
