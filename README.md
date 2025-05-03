@@ -41,16 +41,21 @@ David Lee (dtlee@bu.edu)
 ```
 
 ## How to run
-1. **Rho multiples experiment**: an experiment on how decreasing / increasing expected rho affects robust tuning costs
+1. **Dynamic rho experiment**: an experiment on how decreasing / increasing expected rho affects robust tuning costs
     ```
-    python run_multiples_experiment.py
+    python run_dynamic_rho_experiment.py
     ```
 2. **Error bar experiment**: an experiment that runs 30 trial on a Uniform Workload to check the variation in the results we get from the rho multiples experiment
     ```
     python run_errorbar_experiment.py
     ```
-3. **Stepwise rho experiment**: an experiment on how different static rho values perform under different privacy levels
+3. **Static rho experiment**: an experiment on how different static rho values perform under different privacy levels
     ```
-    python run_stepwise_experiment.py
+    python run_static_rho_experiment.py
     ```
+4. **Robust v. Nominal experiment**: an experiment that compares robust vs. nominal tuning on a perturbed workload
+    ```
+    python run_robust_v_nominal_experiment.py
+    ```
+
 

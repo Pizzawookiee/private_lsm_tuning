@@ -76,12 +76,11 @@ def plot_workload(filename, fig, ax, point_size=100, anchor=(0.2,0.0), show_grad
             perturbed = np.concatenate(matching['Workload (Perturbed)'].values)
             perturbed = list(set(perturbed))
             z0, z1, q, w = parse_workload_list(perturbed)
-        sc = ax.scatter(z0 + z1, q, w, c=[epsilon]*len(q), s=point_size, cmap='viridis', vmin=0.05, vmax=1)
+        sc = ax.scatter(z0 + z1, q, w, c=[epsilon]*len(q), s=point_size, cmap='viridis', vmin=0.05, vmax=1, zorder=4)
 
-    ax.scatter([og_vals[0]] + [og_vals[1]], [og_vals[2]], [og_vals[3]], c='red', s=point_size, label='True Workload')
-    ax.text(og_vals[0] + og_vals[1], og_vals[2], og_vals[3], 
-            "True", color='red', fontsize=font_size)
-    ax.set_title(name + ": " + str(og_vals))
+    ax.scatter(og_vals[0] + og_vals[1], og_vals[2], og_vals[3], c='red', s=point_size, label='True Workload', zorder=5)
+    ax.text(og_vals[0] + og_vals[1], og_vals[2], og_vals[3], "True", color='red', fontsize=font_size, zorder=6)
+    ax.set_title(name)
     
     if show_gradient_map:
         cbar = fig.colorbar(sc,anchor=anchor)
